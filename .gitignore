@@ -1,0 +1,9 @@
+# Executables
+*.exe
+*.o
+*.obj
+
+# Generated files by Flex & Bison (can be regenerated with build.bat)
+lex.yy.c
+y.tab.c
+y.tab.h

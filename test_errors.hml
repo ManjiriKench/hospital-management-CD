@@ -1,0 +1,63 @@
+// =============================================================================
+// HOSPITAL MANAGEMENT DOMAIN-SPECIFIC LANGUAGE (HML)
+// TEST SUITE 2: LEXICAL, SYNTAX, AND SEMANTIC ERROR DETECTION & RECOVERY
+// =============================================================================
+
+// --- 1. Baseline Valid Registrations ---
+REGISTER DOCTOR DOC101 NAME "Dr. Rajesh Sharma" DEPT "Cardiology" FEE 800.00 ;
+REGISTER PATIENT PAT201 NAME "Aarav Mehta" AGE 34 GENDER M CONTACT "9876543210" ;
+
+// --- 2. Lexical Phase Errors (Illegal Characters) ---
+// The '@' character is illegal token in this position
+REGISTER DOCTOR @DOC999 NAME "Dr. Invalid" DEPT "Surgery" FEE 500 ;
+// The '#' character is unrecognized in token stream
+SHOW #PATIENTS ;
+
+// --- 3. Syntax Phase Errors (Malformed Statements) & Recovery ---
+// Syntax Error: Missing keyword 'DOCTOR'
+REGISTER DOC105 NAME "Dr. Missing Keyword" DEPT "ENT" FEE 400 ;
+
+// Syntax Error: Missing arguments before semicolon
+REGISTER PATIENT PAT206 NAME "Incomplete Patient" AGE ;
+
+// Demonstration of Syntax Error Recovery:
+// Even after the syntax errors above, the parser recovers at ';' and parses this:
+REGISTER DOCTOR DOC102 NAME "Dr. Anita Desai" DEPT "Neurology" FEE 950.00 ;
+
+// --- 4. Semantic Phase Errors ---
+// Semantic Error A: Duplicate Doctor ID
+REGISTER DOCTOR DOC101 NAME "Dr. Duplicate Doc" DEPT "Cardiology" FEE 1000.00 ;
+
+// Semantic Error B: Duplicate Patient ID
+REGISTER PATIENT PAT201 NAME "Aarav Duplicate" AGE 40 GENDER M CONTACT "0000000000" ;
+
+// Semantic Error C: Invalid Patient Age (> 120 or <= 0)
+REGISTER PATIENT PAT207 NAME "Old Methuselah" AGE 155 GENDER M CONTACT "1112223334" ;
+REGISTER PATIENT PAT208 NAME "Negative Age Child" AGE -5 GENDER F CONTACT "2223334445" ;
+
+// Semantic Error D: Unregistered Patient in Appointment
+SCHEDULE APPOINTMENT FOR PATIENT PAT777 WITH DOCTOR DOC101 DATE "2026-11-10" TIME "09:00 AM" ;
+
+// Semantic Error E: Unregistered Doctor in Appointment
+SCHEDULE APPOINTMENT FOR PATIENT PAT201 WITH DOCTOR DOC888 DATE "2026-11-10" TIME "09:00 AM" ;
+
+// Semantic Error F: Unregistered Patient in Medical Record
+ADD RECORD FOR PATIENT PAT777 DIAGNOSIS "Headache" PRESCRIPTION "Rest" ADMITTED NO ;
+
+// Semantic Error G: Bill for Unregistered Patient
+GENERATE BILL FOR PATIENT PAT777 LAB_CHARGES 500 MEDICINE_CHARGES 200 ROOM_CHARGES 0 DISCOUNT 10% ;
+
+// Semantic Error H: Negative Charges in Bill
+GENERATE BILL FOR PATIENT PAT201 LAB_CHARGES -300.00 MEDICINE_CHARGES 200.00 ROOM_CHARGES 0.00 DISCOUNT 5.00% ;
+
+// Semantic Error I: Discount greater than 100%
+GENERATE BILL FOR PATIENT PAT201 LAB_CHARGES 500.00 MEDICINE_CHARGES 200.00 ROOM_CHARGES 0.00 DISCOUNT 150.00% ;
+
+// Valid Bill for PAT201 (Demonstrates intermediate code generation)
+GENERATE BILL FOR PATIENT PAT201 LAB_CHARGES 500.00 MEDICINE_CHARGES 200.00 ROOM_CHARGES 0.00 DISCOUNT 10.00% ;
+
+// Semantic Error J: Duplicate Final Bill for same patient
+GENERATE BILL FOR PATIENT PAT201 LAB_CHARGES 300.00 MEDICINE_CHARGES 100.00 ROOM_CHARGES 0.00 DISCOUNT 0.00% ;
+
+// Summary query to view symbol table state after errors
+SHOW SUMMARY ;
